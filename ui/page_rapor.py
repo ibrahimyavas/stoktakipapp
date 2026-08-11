@@ -192,16 +192,16 @@ class RaporPage(QWidget):
         series.append(satis_set)
 
         # Grafik renkleri sabit kodlanmış (koyu-mod varsayımlı) değil, o an
-        # aktif olan temanın (açık/koyu) kendi palette'inden okunuyor —
-        # aksi halde açık modda arka plan/metin okunaksız hale gelirdi.
-        from PySide6.QtGui import QPalette
+        # aktif olan temanın kendi yüzey/metin rengiyle boyanıyor — aksi
+        # halde açık modda grafik alanı koyu kalıp göze batıyordu (ekran
+        # görüntüsüyle tespit edildi).
+        from ui.theme import current_surface_color, current_text_color
 
-        palette = self.palette()
-        text_color = palette.color(QPalette.ColorRole.WindowText)
+        text_color = QColor(current_text_color())
 
         chart = QChart()
         chart.addSeries(series)
-        chart.setBackgroundBrush(palette.color(QPalette.ColorRole.Window))
+        chart.setBackgroundBrush(QColor(current_surface_color()))
         chart.legend().setLabelColor(text_color)
         chart.setTitleBrush(text_color)
 

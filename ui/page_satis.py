@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QSplitter,
     QTableWidget,
     QTableWidgetItem,
@@ -67,32 +68,40 @@ class SatisPage(QWidget):
         layout = QVBoxLayout(widget)
 
         quick_box = QGroupBox("Yeni Satış Başlat")
-        quick_grid = QGridLayout(quick_box)
-        self.quick_product_combo = QComboBox()
-        quick_grid.addWidget(QLabel("Ürün"), 0, 0)
-        quick_grid.addWidget(self.quick_product_combo, 0, 1)
+        quick_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        quick_layout = QVBoxLayout(quick_box)
+        quick_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
+        product_row = QHBoxLayout()
+        product_row.addWidget(QLabel("Ürün"))
+        self.quick_product_combo = QComboBox()
+        product_row.addWidget(self.quick_product_combo, 1)
+        quick_layout.addLayout(product_row)
+
+        quick_grid = QGridLayout()
         self.quick_teneke, self.quick_kg, self.quick_adet = QDoubleSpinBox(), QDoubleSpinBox(), QDoubleSpinBox()
         for s in (self.quick_teneke, self.quick_kg, self.quick_adet):
             s.setRange(0, 1_000_000_000)
             s.setDecimals(2)
-        quick_grid.addWidget(QLabel("Teneke"), 1, 0)
-        quick_grid.addWidget(self.quick_teneke, 1, 1)
-        quick_grid.addWidget(QLabel("Kg"), 2, 0)
-        quick_grid.addWidget(self.quick_kg, 2, 1)
-        quick_grid.addWidget(QLabel("Adet"), 3, 0)
-        quick_grid.addWidget(self.quick_adet, 3, 1)
+        quick_grid.addWidget(QLabel("Teneke"), 0, 0)
+        quick_grid.addWidget(self.quick_teneke, 1, 0)
+        quick_grid.addWidget(QLabel("Kg"), 0, 1)
+        quick_grid.addWidget(self.quick_kg, 1, 1)
+        quick_grid.addWidget(QLabel("Adet"), 0, 2)
+        quick_grid.addWidget(self.quick_adet, 1, 2)
+        quick_layout.addLayout(quick_grid)
 
         start_btn = QPushButton("Satışı Başlat → Firmaya İşle")
         start_btn.setProperty("variant", "primary")
         start_btn.clicked.connect(self._start_quick_sale)
-        quick_grid.addWidget(start_btn, 4, 0, 1, 2)
+        quick_layout.addWidget(start_btn)
         layout.addWidget(quick_box)
 
         self.stock_table = QTableWidget(0, 4)
         self.stock_table.setHorizontalHeaderLabels(["Ürün", "Teneke", "Kg", "Adet"])
         self.stock_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.stock_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.stock_table.setAlternatingRowColors(True)
         layout.addWidget(self.stock_table)
 
         return widget
@@ -182,6 +191,7 @@ class SatisPage(QWidget):
         self.pending_table.setHorizontalHeaderLabels(["Tarih", "Ürün", "Satış", "Satış ID", "İşlem"])
         self.pending_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.pending_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.pending_table.setAlternatingRowColors(True)
         layout.addWidget(self.pending_table)
         return widget
 
@@ -247,6 +257,7 @@ class SatisPage(QWidget):
         self.company_table.setHorizontalHeaderLabels(["Kod", "Ad", "Telefon", "İşlem"])
         self.company_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.company_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.company_table.setAlternatingRowColors(True)
         layout.addWidget(self.company_table)
 
         return widget
@@ -337,6 +348,7 @@ class SatisPage(QWidget):
         )
         self.sales_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         self.sales_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.sales_table.setAlternatingRowColors(True)
         layout.addWidget(self.sales_table)
 
         return widget

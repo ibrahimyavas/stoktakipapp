@@ -79,6 +79,7 @@ class WaybillVaultDialog(QDialog):
         self.list_table = QTableWidget(0, 5)
         self.list_table.setHorizontalHeaderLabels(["İrsaliye No", "Firma", "Tarih", "Tutar", "İşlem"])
         self.list_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.list_table.setAlternatingRowColors(True)
         layout.addWidget(self.list_table)
 
         return widget

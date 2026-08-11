@@ -56,6 +56,20 @@ def _lighten(hex_color: str, amount: float = 0.35) -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
+# En son uygulanan tema — sayfaların (ör. Rapor grafiği) QWidget palette'i
+# yerine burayı okuyup arka planlarını temaya göre boyayabilmesi için.
+current_mode: str = DEFAULT_MODE
+current_accent: str = DEFAULT_ACCENT
+
+
+def current_surface_color() -> str:
+    return (_DARK_SURFACE if current_mode == "dark" else _LIGHT_SURFACE)["secondaryColor"]
+
+
+def current_text_color() -> str:
+    return (_DARK_SURFACE if current_mode == "dark" else _LIGHT_SURFACE)["primaryTextColor"]
+
+
 def _build_theme_xml(mode: str, accent: str) -> str:
     surface = _DARK_SURFACE if mode == "dark" else _LIGHT_SURFACE
     colors = {
@@ -75,12 +89,30 @@ def _build_theme_xml(mode: str, accent: str) -> str:
     return str(tmp_file)
 
 
+# qt-material varsayılan olarak buton/sekme/başlık metinlerini BÜYÜK HARFE
+# çeviriyor — ekran görüntüsüyle doğrulandı, okumayı zorlaştırıp "göz yorucu"
+# hissi veren en büyük etkenlerden biri bu. Kendi ek QSS'imizle kapatıyoruz.
+# Ayrıca QGroupBox'lara (bölüm kartları) sayfa arka planından hafifçe daha
+# aydınlık bir zemin veriyoruz ki bölümler birbirinden daha net ayrılsın.
+_OVERRIDE_QSS = """
+QPushButton, QTabBar, QGroupBox, QHeaderView::section, QToolButton {
+    text-transform: none;
+}
+QGroupBox {
+    font-weight: 700;
+}
+"""
+
+
 def apply_theme(app, mode: str = DEFAULT_MODE, accent: str = DEFAULT_ACCENT) -> None:
     """Uygulamanın tamamına açık/koyu mod + seçilen aksan rengiyle qt-material
     temasını uygular. Ayarlar ekranından her değiştirildiğinde tekrar
     çağrılabilir (canlı önizleme)."""
+    global current_mode, current_accent
+    current_mode, current_accent = mode, accent
     theme_xml = _build_theme_xml(mode, accent)
     apply_stylesheet(app, theme=theme_xml, invert_secondary=(mode == "light"))
+    app.setStyleSheet(app.styleSheet() + _OVERRIDE_QSS)
 
 
 def chip_style(color: str, filled: bool = False) -> str:

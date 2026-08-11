@@ -66,6 +66,7 @@ class GenelPage(QWidget):
         )
         self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.setAlternatingRowColors(True)
         layout.addWidget(self.table)
 
         self.on_data_refreshed()

@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QSplitter,
     QTableWidget,
     QTableWidgetItem,
@@ -95,6 +96,12 @@ class DefterPage(QWidget):
         layout.addLayout(quick_row)
 
         grid = QGridLayout()
+        # Etiket sütunları (0, 2) içeriğe göre dar kalsın, alan sütunları
+        # (1, 3) esnesin — aksi halde "Ürün Adı" gibi etiketler kesiliyordu.
+        grid.setColumnStretch(0, 0)
+        grid.setColumnStretch(1, 1)
+        grid.setColumnStretch(2, 0)
+        grid.setColumnStretch(3, 1)
         row = 0
 
         self.tarih_edit = QLineEdit(get_today_date_string())
@@ -135,9 +142,12 @@ class DefterPage(QWidget):
         )
         if self.profile_role in ("uretim", "admin"):
             uretim_tab = QWidget()
-            uretim_tab_layout = QHBoxLayout(uretim_tab)
-            uretim_tab_layout.addWidget(self.uretim_box)
-            uretim_tab_layout.addWidget(self.fire_box)
+            uretim_tab_layout = QVBoxLayout(uretim_tab)
+            uretim_row = QHBoxLayout()
+            uretim_row.addWidget(self.uretim_box)
+            uretim_row.addWidget(self.fire_box)
+            uretim_tab_layout.addLayout(uretim_row)
+            uretim_tab_layout.addStretch()
             tabs.addTab(uretim_tab, "Üretim / Fire")
         for spin in (
             self.uretim_teneke, self.uretim_kg, self.uretim_adet,
@@ -180,7 +190,9 @@ class DefterPage(QWidget):
 
         self.bitis_label = QLabel("0 T / 0 Kg / 0 Ad")
         bitis_box = QGroupBox("Bitiş Stoğu (otomatik hesaplanır)")
+        bitis_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         bitis_layout = QVBoxLayout(bitis_box)
+        bitis_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         bitis_layout.addWidget(self.bitis_label)
         stock_row.addWidget(bitis_box)
         stok_layout.addLayout(stock_row)
@@ -206,8 +218,14 @@ class DefterPage(QWidget):
         return panel
 
     def _triple_box(self, title: str, teneke: QDoubleSpinBox, kg: QDoubleSpinBox, adet: QDoubleSpinBox) -> QGroupBox:
+        # Not: kutu bir sekmenin içinde olduğu için sekme alanı kadar
+        # yükselmeye çalışıyordu, bu da başlıkla alanlar arasında büyük boş
+        # bir aralık bırakıyordu (ekran görüntüsüyle tespit edildi). Dikey
+        # boyut politikasını "Maximum" yapıp içeriği üstte sabitliyoruz.
         box = QGroupBox(title)
+        box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         grid = QGridLayout(box)
+        grid.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(QLabel("Teneke"), 0, 0)
         grid.addWidget(teneke, 1, 0)
         grid.addWidget(QLabel("Kg"), 0, 1)
@@ -231,9 +249,13 @@ class DefterPage(QWidget):
         self.table = QTableWidget(0, 8)
         headers = ["Tarih", "Ürün", "Üretim", "Fire", "Satış / ID", "Açılış", "Bitiş", "İşlem"]
         self.table.setHorizontalHeaderLabels(headers)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        header.setMinimumSectionSize(90)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.table.setAlternatingRowColors(True)
         if self.profile_role == "satis":
             self.table.setColumnHidden(2, True)
             self.table.setColumnHidden(3, True)
