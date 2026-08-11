@@ -191,20 +191,28 @@ class RaporPage(QWidget):
         series.append(uretim_set)
         series.append(satis_set)
 
+        # Grafik renkleri sabit kodlanmış (koyu-mod varsayımlı) değil, o an
+        # aktif olan temanın (açık/koyu) kendi palette'inden okunuyor —
+        # aksi halde açık modda arka plan/metin okunaksız hale gelirdi.
+        from PySide6.QtGui import QPalette
+
+        palette = self.palette()
+        text_color = palette.color(QPalette.ColorRole.WindowText)
+
         chart = QChart()
         chart.addSeries(series)
-        chart.setBackgroundBrush(QColor("#0A0A0B"))
-        chart.legend().setLabelColor(QColor("#E2E8F0"))
-        chart.setTitleBrush(QColor("#E2E8F0"))
+        chart.setBackgroundBrush(palette.color(QPalette.ColorRole.Window))
+        chart.legend().setLabelColor(text_color)
+        chart.setTitleBrush(text_color)
 
         axis_x = QBarCategoryAxis()
         axis_x.append(labels)
-        axis_x.setLabelsColor(QColor("#94A3B8"))
+        axis_x.setLabelsColor(text_color)
         chart.addAxis(axis_x, Qt.AlignmentFlag.AlignBottom)
         series.attachAxis(axis_x)
 
         axis_y = QValueAxis()
-        axis_y.setLabelsColor(QColor("#94A3B8"))
+        axis_y.setLabelsColor(text_color)
         chart.addAxis(axis_y, Qt.AlignmentFlag.AlignLeft)
         series.attachAxis(axis_y)
 

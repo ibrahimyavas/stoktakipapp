@@ -36,6 +36,9 @@ class AppSettings:
     sheets_url: str = ""
     # Son seçilen rol (uretim/satis/admin) — bir sonraki açılışta hatırlanır.
     last_profile: str = ""
+    # Görünüm: "dark" / "light" + serbestçe seçilebilir aksan rengi (#RRGGBB).
+    theme_mode: str = "dark"
+    accent_color: str = "#10B981"
 
     def is_configured(self) -> bool:
         return bool(self.turso_database_url and self.turso_auth_token)
@@ -47,7 +50,13 @@ def load_settings() -> AppSettings:
         return AppSettings()
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
-        return AppSettings(**{k: raw.get(k, "") for k in AppSettings.__dataclass_fields__})
+        defaults = AppSettings()
+        # Eksik alanlar (ör. eski bir config.json'da henüz olmayan yeni
+        # tema alanları) her zaman kendi varsayılanını alır — "" değil,
+        # aksi halde tema uygulaması boş renk/mod ile bozulurdu.
+        return AppSettings(
+            **{k: raw.get(k, getattr(defaults, k)) for k in AppSettings.__dataclass_fields__}
+        )
     except (json.JSONDecodeError, OSError, TypeError):
         return AppSettings()
 

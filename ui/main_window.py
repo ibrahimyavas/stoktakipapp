@@ -70,15 +70,12 @@ class MainWindow(QMainWindow):
         self.tab_bar.setStyleSheet(
             f"""
             QTabBar::tab {{
-                background: rgba(255,255,255,0.03);
-                color: #94A3B8;
                 padding: 10px 18px;
                 margin: 4px;
                 border-radius: 8px;
             }}
             QTabBar::tab:selected {{
-                background: {info.color}22;
-                color: white;
+                background: {info.color}33;
                 font-weight: 700;
             }}
             """
@@ -107,12 +104,11 @@ class MainWindow(QMainWindow):
 
     def _build_header(self, info) -> QWidget:
         header = QWidget()
-        header.setStyleSheet("background: #141417; border-bottom: 1px solid rgba(255,255,255,0.08);")
         layout = QHBoxLayout(header)
         layout.setContentsMargins(16, 10, 16, 10)
 
         title = QLabel("Üretim & Satış Defteri")
-        title.setStyleSheet("color: white; font-weight: 700; font-size: 15px;")
+        title.setStyleSheet("font-weight: 700; font-size: 15px;")
         layout.addWidget(title)
 
         role_badge = QLabel(info.label)

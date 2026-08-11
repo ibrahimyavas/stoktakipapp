@@ -7,7 +7,7 @@
 import sys
 from pathlib import Path
 
-from PyInstaller.utils.hooks import collect_dynamic_libs, get_package_paths
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, get_package_paths
 
 block_cipher = None
 ROOT = Path(SPECPATH).parent  # desktop-app/
@@ -39,11 +39,17 @@ extra_binaries = (
     + _find_versioned_libs("PySide6")
 )
 
+# qt-material, tema XML'lerini/Roboto fontunu/ikon SVG'lerini kendi paket
+# dizininden dosya yolu olarak okuyor (Python import'u değil) — PyInstaller'ın
+# otomatik tarayıcısı bunları göremez, elle toplamak gerekiyor. Aksi halde
+# derlenmiş uygulamada tema uygulanamaz/hata verir.
+extra_datas = collect_data_files("qt_material")
+
 a = Analysis(
     [str(ROOT / "main.py")],
     pathex=[str(ROOT)],
     binaries=extra_binaries,
-    datas=[],
+    datas=extra_datas,
     hiddenimports=[
         "libsql_client",
         "libsql_client.http",

@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
     QSplitter,
     QTableWidget,
     QTableWidgetItem,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -118,7 +119,10 @@ class DefterPage(QWidget):
 
         layout.addLayout(grid)
 
-        sections = QHBoxLayout()
+        # Ekran çok kalabalık görünmesin diye (özellikle admin rolünde hepsi
+        # aynı anda görünürdü) üretim/fire, satış ve stok/fiyat alanları ayrı
+        # sekmelere bölündü — o an ilgilendiğiniz grup dışındakiler gizli.
+        tabs = QTabWidget()
 
         # Üretim / Fire — sadece uretim/admin
         self.uretim_teneke, self.uretim_kg, self.uretim_adet = _spin(), _spin(), _spin()
@@ -130,8 +134,11 @@ class DefterPage(QWidget):
             "Fire / Wastage", self.fire_teneke, self.fire_kg, self.fire_adet
         )
         if self.profile_role in ("uretim", "admin"):
-            sections.addWidget(self.uretim_box)
-            sections.addWidget(self.fire_box)
+            uretim_tab = QWidget()
+            uretim_tab_layout = QHBoxLayout(uretim_tab)
+            uretim_tab_layout.addWidget(self.uretim_box)
+            uretim_tab_layout.addWidget(self.fire_box)
+            tabs.addTab(uretim_tab, "Üretim / Fire")
         for spin in (
             self.uretim_teneke, self.uretim_kg, self.uretim_adet,
             self.fire_teneke, self.fire_kg, self.fire_adet,
@@ -145,21 +152,23 @@ class DefterPage(QWidget):
         )
         self.satis_id_edit = QLineEdit()
         if self.profile_role in ("satis", "admin"):
-            satis_col = QVBoxLayout()
+            satis_tab = QWidget()
+            satis_col = QVBoxLayout(satis_tab)
             satis_col.addWidget(self.satis_box)
             id_row = QHBoxLayout()
             id_row.addWidget(QLabel("Satış ID"))
             id_row.addWidget(self.satis_id_edit)
             satis_col.addLayout(id_row)
-            satis_widget = QWidget()
-            satis_widget.setLayout(satis_col)
-            sections.addWidget(satis_widget)
+            satis_col.addStretch()
+            tabs.addTab(satis_tab, "Satış")
         for spin in (self.satis_teneke, self.satis_kg, self.satis_adet):
             spin.valueChanged.connect(self._refresh_ending_stock_preview)
 
-        layout.addLayout(sections)
-
-        # Başlangıç / Bitiş stoğu
+        # Stok & Fiyat — her rol için her zaman var (başlangıç/bitiş stoğu +
+        # fiyat, hangi rol olursa olsun görülmesi/kontrol edilmesi gereken
+        # temel bilgiler).
+        stok_tab = QWidget()
+        stok_layout = QVBoxLayout(stok_tab)
         stock_row = QHBoxLayout()
         self.baslangic_teneke, self.baslangic_kg, self.baslangic_adet = _spin(), _spin(), _spin()
         self.baslangic_box = self._triple_box(
@@ -174,14 +183,14 @@ class DefterPage(QWidget):
         bitis_layout = QVBoxLayout(bitis_box)
         bitis_layout.addWidget(self.bitis_label)
         stock_row.addWidget(bitis_box)
+        stok_layout.addLayout(stock_row)
 
-        layout.addLayout(stock_row)
-
-        # Fiyat
-        price_row = QHBoxLayout()
         self.fiyat_teneke, self.fiyat_kg, self.fiyat_adet = _spin(), _spin(), _spin()
-        price_row.addWidget(self._triple_box("Fiyat (₺)", self.fiyat_teneke, self.fiyat_kg, self.fiyat_adet))
-        layout.addLayout(price_row)
+        stok_layout.addWidget(self._triple_box("Fiyat (₺)", self.fiyat_teneke, self.fiyat_kg, self.fiyat_adet))
+        stok_layout.addStretch()
+        tabs.addTab(stok_tab, "Stok & Fiyat")
+
+        layout.addWidget(tabs)
 
         # Butonlar
         btn_row = QHBoxLayout()

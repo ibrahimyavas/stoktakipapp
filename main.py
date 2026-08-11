@@ -27,8 +27,8 @@ class AppController:
     def __init__(self):
         self.app = QApplication(sys.argv)
         self.app.setApplicationName("Üretim & Satış Defteri")
-        apply_theme(self.app)
         self.settings = load_settings()
+        apply_theme(self.app, self.settings.theme_mode, self.settings.accent_color)
         self.db: DbCore | None = None
         self.state: AppState | None = None
         self.window = None  # aktif üst seviye pencere/widget referansı (GC'yi engellemek için)
